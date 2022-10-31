@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ic.alang.requestboard.mapper.RequestBoardSQLMapper">
+
+<insert id="requestBoardWrite">
+INSERT INTO ic_requestboard VALUES(
+    ic_requestboard_seq.nextval,
+    #{member_no},
+    #{request_name},
+    #{request_content},
+    SYSDATE
+)
+</insert>
+
+<select id="getRequestBoardList" resultType="com.ic.alang.vo.RequestBoardVo">
+   SELECT   
+   request_no,
+   member_no,
+   request_name,
+   request_date
+   FROM 
+   ic_requestboard 
+   ORDER BY 
+   request_no DESC
+</select>
+
+<select id="getRequestBoardByNo" resultType="com.ic.alang.vo.RequestBoardVo">
+      select * from ic_requestboard where request_no = #{no}
+</select>
+
+<delete id="deleteRequestByNo">
+      DELETE FROM ic_requestboard WHERE request_no = #{no}
+</delete>
+
+<update id="updateRequestBoard">
+      update ic_requestboard 
+      set request_name = #{request_name}, 
+      request_content = #{request_content}
+      WHERE request_no = #{request_no}      
+</update>
+   
+<select id="getRequestReplyList" resultType="com.ic.alang.vo.RequestReplyVo">
+   SELECT 
+   request_reply_no,
+   request_no,
+   member_no,
+   request_reply_content,
+   request_reply_date
+   FROM ic_request_reply
+   WHERE request_no = #{no}
+   ORDER BY 
+    request_reply_no DESC
+</select>
+
+<insert id="requestReplyWrite">
+   insert into ic_request_reply(
+      request_reply_no,
+      request_no,
+      request_reply_content,
+      member_no,
+      request_reply_date
+   ) values(
+      ic_request_reply_seq.nextval,
+      #{request_no},
+      #{request_reply_content},
+      #{member_no},
+      SYSDATE
+   )
+   
+</insert>   
+
+<delete id="deleteRequestReplyByNo">
+      DELETE FROM ic_request_reply WHERE request_reply_no = #{no}
+</delete>
+</mapper> 

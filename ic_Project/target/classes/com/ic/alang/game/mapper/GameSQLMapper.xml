@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ic.alang.game.mapper.GameSQLMapper">
+
+<insert id="gameMake">
+	insert into ic_game values(
+    ic_game_seq.nextval,<!-- game_no -->
+    #{game_win_point},<!-- game_win_point -->
+    SYSDATE,<!-- game_start_time -->
+    SYSDATE + 1/24/60*100<!-- game_end_time -->
+)
+</insert>
+
+<select id="getGameBoardList" resultType="com.ic.alang.vo.GameVo">
+	select 
+	game_no, 
+	game_win_point,
+	game_start_time, 
+	game_end_time
+	from ic_game
+	ORDER BY game_no DESC
+</select>
+<select id ="showGameByNo" resultType="com.ic.alang.vo.GameVo">
+	select * from ic_game where game_no=#{no}
+</select>
+
+<insert id="bidDo">
+	insert into ic_bid values(
+    ic_bid_seq.nextval-1,
+    #{member_no},
+    #{game_no},
+    #{bid_point},
+    SYSDATE
+)
+</insert>
+
+<update id="usePointBid">
+	update ic_member
+	set member_point = member_point - #{bid_point}
+	WHERE member_no = #{member_no}
+</update>
+
+<select id="showBidByNo" resultType="com.ic.alang.vo.BidVo">
+	select * from ic_bid where game_no=#{no} order by bid_point desc
+</select>
+
+<select id="getSecondWinner" resultType="int">
+
+SELECT bid.member_no FROM IC_Bid bid
+WHERE bid_point = (
+SELECT t3.bid_point FROM (
+    SELECT t2.bid_point , ROWNUM as rnum FROM (
+        SELECT * FROM (
+            SELECT DISTINCT BID_Point FROM IC_Bid
+            WHERE game_no = #{no}) t1
+        ORDER BY t1.bid_point DESC) t2
+        ) t3
+    WHERE t3.rnum = 2
+)
+
+</select>
+
+</mapper> 

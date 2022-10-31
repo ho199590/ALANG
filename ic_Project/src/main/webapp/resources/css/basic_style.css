@@ -1,0 +1,47 @@
+hr.hrline{
+ 	border-top: 3px solid black;
+ }
+</style>
+<style type="text/css">
+a:link {
+	text-decoration: none;
+	color: black
+}
+
+a:visited {
+	text-decoration: none;
+	color: black
+}
+
+a:hover {
+	color: blue
+}
+</style>
+<style>
+#yes {
+	margin-right: 0px;
+	border-radius: 20px;
+	color: skyblue;
+	border: 1px solid skyblue;
+	background-color: rgba(0, 0, 0, 0);
+	transition-duration: 1s;
+}
+
+#yes:hover {
+	background-color: #a3f1ff;
+	color: black
+}
+
+#no {
+	margin-left: 300px;
+	border-radius: 20px;
+	color: skyblue;
+	border: 1px solid skyblue;
+	background-color: rgba(0, 0, 0, 0);
+	transition-duration: 1s;
+}
+
+#no:hover {
+	background-color: #ffa1a1;
+	color: black
+}

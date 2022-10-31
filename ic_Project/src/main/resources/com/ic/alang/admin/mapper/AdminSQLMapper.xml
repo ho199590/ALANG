@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ic.alang.admin.mapper.AdminSQLMapper">
+	
+<select id="getAdminByIdandPwandNo" resultType="com.ic.alang.vo.MemberVo">
+	SELECT * 
+	FROM ic_member 
+	WHERE member_id=#{member_id}
+	and member_pw=#{member_pw}  
+	and member_no=0
+	</select>
+
+	<select id="getReportList" resultType="com.ic.alang.vo.ReportVo">
+	select * from ic_report
+	order by report_no asc
+	</select>
+	
+	<select id="getReportByNo" resultType="com.ic.alang.vo.ReportVo">
+	select * from ic_report
+	where report_no=#{no}
+	</select>
+	
+	<insert id="restrainDayByMemberNo">
+	insert into ic_report_member values(
+    ic_report_member_list.nextval,
+    #{no},
+    1,
+    sysdate+1
+	)
+	</insert>
+	
+	<insert id="restrainWeekByMemberNo">
+	insert into ic_report_member values(
+    ic_report_member_list.nextval,
+    #{no},
+    2,
+    sysdate+7
+	)
+	</insert>
+	
+	<insert id="restrainMonthByMemberNo">
+	insert into ic_report_member values(
+    ic_report_member_list.nextval,
+    #{no},
+    3,
+    sysdate+30
+	)
+	</insert>
+	
+	<insert id="restrainPermanentByMemberNo">
+	insert into ic_report_member values(
+    ic_report_member_list.nextval,
+    #{no},
+    4,
+    sysdate+9999
+	)
+	</insert>
+	
+	<select id="checkRestrainDate" resultType="int">
+	 <![CDATA[
+	select count(*) from ic_report_member 
+	where sysdate < restrain_date 
+	and member_no=#{no}
+	  ]]>
+	</select>
+	
+
+</mapper>

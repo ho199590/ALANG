@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ic.alang.pluspoint.mapper.PlusPointSQLMapper">
+
+<insert id="plusPoint">
+	insert into ic_plus_point values(
+	#{member_no},
+	#{plus_point}
+)
+</insert>
+
+<update id="updatePoint">
+	update ic_member
+	set member_point = member_point + #{plus_point}
+	WHERE member_no = #{member_no}
+</update>
+
+
+<!-- 
+<update id="updatePoint">
+update ic_member
+set ic_member.member_point = (select sum(ic_plus_point.plus_point)+(ic_member.member_point)
+from ic_plus_point
+where ic_plus_point.member_no = ic_member.member_no
+group by ic_plus_point.member_no
+)
+where ic_member.member_no=#{member_no}
+</update>
+ -->
+ 
+</mapper>

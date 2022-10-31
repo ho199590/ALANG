@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ic.alang.message.mapper.MessageSQLMapper">
+
+	<select id="getRecvMessageList" resultType="com.ic.alang.vo.MessageVo">
+	select * from ic_message ORDER BY message_no DESC
+	</select>
+	
+	<insert id="writeMessage"> 
+	insert into ic_message values(
+	ic_message_seq.nextval,
+	#{message_recv},
+	#{message_send},
+	#{message_title},
+	#{message_content},
+	SYSDATE
+	)
+	</insert>
+	
+	<select id="getMessageByNo" resultType="com.ic.alang.vo.MessageVo">
+		select * from ic_message where message_no = #{no}
+	</select>
+	
+	<select id="sendMessageListByNo" resultType="com.ic.alang.vo.MessageVo">
+	select *
+	from
+	ic_message
+	where message_send =#{no}
+	
+	
+	</select>
+		
+	<delete id="deleteMessageByNo"> 
+	DELETE FROM ic_message WHERE message_no = #{no}
+	</delete>
+		
+
+<!--안쓰는것들 이거밑에부터  -->
+<select id ="sendByNo" resultType="com.ic.alang.vo.MessageVo">
+	select * from ic_message 
+	where send_name =#{send_name} 
+</select>
+
+<select id ="recvByNo" resultType="com.ic.alang.vo.MessageVo">
+	select
+</select>
+<!-- 메세지 리스트  가져옴 따른걸로 해봄
+<select id="messageList" resultType="com.ic.alang.vo.MessageVo">
+ select message_no,message_room,send_name,recv_name,SYSDATE,SYSDATE,message_content,read_chk
+ from ic_message 
+ where message_no in(select max(message_no) from ic_message group by message_room) 
+ and (send_name=#{member_name} and recv_name =#{member_name})
+ order by message_no DESC
+
+</select>
+-->
+
+<!-- 메세지 리스트에서 상대방 ID가져오기 
+<select id="getOtherID" resultType="com.ic.alang.vo.MessageVo">
+select member_id from ic_member
+<choose>
+	<when test="send_name == member_name">
+		where member_name = #{recv_name}
+	</when>
+	<otherwise>
+		where member_name =#{send_name}
+	</otherwise>
+</choose>
+</select>
+-->
+
+<!-- 안읽은 메세지 몇개인지 가져오기  -->
+<select id="countUnRead" resultType="com.ic.alang.vo.MessageVo">
+	select count(message_no) from ic_message
+	where recv_name=#{member_name} and read_chk=0 and message_room=#{message_room}
+
+</select>
+
+<!-- 메세지 내용 가져오기 -->
+<select id="roomContentList" resultType="com.ic.alang.vo.MessageVo">
+	select m.message_no , m.message_room , m.send_name , m.recv_name ,SYSDATE , SYSDATE , u.member_id
+	from ic_message m left outer join ic_member u
+	on m.send_name = u.member_name
+	<choose>
+		<when test="message_room !=0">
+			where message_room=#{message_room}
+		</when>
+		<otherwise>
+			where (recv_name =#{recv_name} and send_name =#{member_name}) or 
+			(send_name =#{recv_name} and recv_name=#{member_name})
+		</otherwise>
+	</choose>
+</select>
+
+<!-- 메세지 읽음 처리 -->
+<update id="messageReadChk">
+	update ic_message set read_chk=1
+	<choose>
+		<when test="message_room !=0">
+			where message_room=#{message_room} and read_chk=0 and recv_name=#{member_name}
+		</when>
+		<otherwise>
+			where send_name =#{recv_name} and read_chk =0 and recv_name=#{member_name}
+		</otherwise>
+	</choose>
+</update>
+
+	<!-- 메세지리스트에서 메세지 보내기 -->
+<insert id="messageSendInList">
+	<choose>
+		<when test="message_room !=0">
+		insert into ic_message values(0, #{message_room} , #{send_name}, #{recv_name} ,SYSDATE ,SYSDATE
+		#{message_content},0);
+		</when>
+	<otherwise>
+		insert into ic_message values(0, #{message_room} , #{send_name}, #{recv_name} ,SYSDATE ,SYSDATE
+		#{message_content},0);
+	</otherwise>
+	</choose>
+</insert>
+
+<!-- message_room 번호 최댓값 구하기 -->
+<select id="maxRoom" resultType="com.ic.alang.vo.MessageVo">
+	select max(message_room) from ic_message
+</select>
+
+<!-- 메세지 이력이 있는지 검색해보기-->
+<select id="existChat" resultType="com.ic.alang.vo.MessageVo">
+	select count(message_no) from ic_message
+	where (recv_name =#{recv_name} and send_name=#{send_name}) or
+	(send_name =#{recv_name} and recv_name=#{send_name})
+</select>
+
+<!-- 기존 메세지 내역의 message_room 번호를 가져온다 -->
+<select id="selectMessageRoom" resultType="com.ic.alang.vo.MessageVo">
+	select message_room from ic_message
+	where (recv_name =#{recv_name} and send_name=#{send_name}) 
+	or (send_name=#{recv_name} and recv_name=#{send_name})
+	limit 0,1
+</select>
+</mapper>

@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ic.alang.course.mapper.CourseSQLMapper">
+	
+	<select id="createCoursePK" resultType="int">
+		SELECT ic_course_seq.nextval FROM Dual
+	</select>
+	
+	<insert id="courseOpen">
+		INSERT INTO ic_Course VALUES (
+    		ic_course_seq.nextval-1,
+    		#{member_no},
+    		#{course_name},
+    		#{course_tuto},
+    		SYSDATE
+		)
+	</insert>
+	
+	<select id="getCourseByNo" resultType="com.ic.alang.vo.CourseVo">
+		<![CDATA[
+			SELECT * FROM IC_course WHERE course_no = #{no}
+		]]>
+	</select>
+	
+	<!-- 강홍 2021-11-11 추가 -->
+	
+	<select id="checkCreateCourse" resultType="int">
+		SELECT COUNT(*) 
+		FROM ic_member m, ic_course c
+		WHERE m.member_no = c.member_no 
+		AND m.member_no = #{member_no}
+		AND c.course_no = #{course_no}
+	</select>
+	
+	<!-- 뭉탱이 강의 -->
+	<select id="mainCourse" resultType="com.ic.alang.vo.CourseVo">
+		SELECT *
+		FROM ic_Course
+		ORDER BY course_no DESC
+	</select>
+	
+	<!-- 세부 강의 Insert -->
+	<insert id="addLecture">
+		INSERT INTO ic_Course_lecture Values(
+			ic_Course_lecture_seq.nextval,
+			#{course_no},
+			#{course_name},
+			#{course_tuto},
+			#{course_price},
+			#{course_file},
+			#{course_link},
+			SYSDATE
+		)
+		
+	</insert>
+	
+	<!-- 강의 리스트 뽑아오기 -->
+	<select id="lectureList" resultType="com.ic.alang.vo.LectureVo">
+		SELECT * FROM ic_Course_lecture
+		WHERE course_no = #{no}
+		ORDER BY lecture_no DESC
+	</select>
+	
+	<!-- 강의 클릭시 맞는 영상 뽑아오기 -->
+	<select id="lectureView" resultType="com.ic.alang.vo.LectureVo">
+		SELECT * FROM ic_Course_lecture
+		WHERE course_no = #{course_no}
+		AND lecture_no = #{lecture_no}
+	</select>
+	
+	<!-- 2021-11-15 - 노진호 님 -->
+	<!-- 카테고리 관련 -->
+	<select id="getCategoryList" resultType="com.ic.alang.vo.SmallCategoryVo">
+		SELECT * FROM ic_small_category
+	</select>
+	
+	<insert id="registerCategory">
+		INSERT INTO ic_Course_Category VALUES(
+			#{course_no},
+			#{small_category_no}
+		)
+	</insert>
+	
+	<select id="getBigCategoryList" resultType="com.ic.alang.vo.BigCategoryVo">
+		SELECT * FROM ic_big_category		
+	</select>
+	
+	<!-- 강의자 불러오기 -->
+	<select id="getMemberByCourseNo" resultType="com.ic.alang.vo.MemberVo">
+		select m.* From ic_member m , ic_course c where
+		m.member_no = c.member_no
+		and c.course_no = #{course_no}	
+	</select>
+	
+	<!-- 2021-11-24 노진호님 수정 -->
+	<!-- 공지사항 -->
+	<select id="createNoticePK" resultType="int">
+		SELECT ic_notice_seq.nextval FROM Dual
+	</select>
+	<insert id="registNotice">
+		INSERT INTO ic_course_notice VALUES(
+		    #{notice_no},
+		    #{course_no},
+		    #{notice_title},
+		    #{notice_content},
+		    SYSDATE
+		)
+	</insert>
+	
+	<insert id="registerNoticeImage">
+		INSERT INTO ic_Course_Notice_img VALUES(
+		    Course_Notice_img_SEQ.nextval,
+		    #{notice_no},
+		    #{image_link},
+		    #{image_filename}
+		)
+	</insert>
+	
+	<select id="getCourseImageByBoardNo" resultType="com.ic.alang.vo.CourseNoticeImageVo">
+		SELECT * FROM ic_Course_Notice_img WHERE notice_no = #{notice_no}
+	</select>
+	
+	
+	<select id="getNoticeList" resultType="com.ic.alang.vo.NoticeVo">
+		select * from ic_course_notice where course_no = #{course_no}
+		ORDER BY notice_no DESC		
+	</select>
+	
+	<select id="getNoticeByNo" resultType="com.ic.alang.vo.NoticeVo">
+		<![CDATA[
+			SELECT * FROM ic_course_notice WHERE notice_no = #{no}
+		]]>		
+	</select>
+	
+	<delete id="deleteNotice">
+		DELETE FROM ic_course_notice WHERE notice_no = #{notice_no}		
+	</delete>
+	
+	<!-- 리뷰 -->
+	<insert id="writeReview">
+		INSERT INTO ic_review VALUES (
+		    IC_REVIEW_SEQ.nextval,
+		    #{course_no},
+		    #{member_no},
+		    #{review_title},
+		    #{review_content},
+		    #{review_rate},
+		    SYSDATE
+		)
+	</insert>
+	
+	<select id="getReviewList" resultType="com.ic.alang.vo.ReviewVo">
+		select * from ic_review r where course_no = #{course_no} ORDER BY r.review_no DESC
+	</select>
+	
+	<select id="getReviewByNo" resultType="com.ic.alang.vo.ReviewVo">
+		select * from ic_review r where r.review_no = ${review_no}
+	</select>
+	
+	<select id="getReviewByLastInsert" resultType="com.ic.alang.vo.ReviewVo">
+		select * from(
+		   select *
+		   from ic_review r
+		   order by r.review_date DESC
+		)
+		<![CDATA[
+   		 where course_no = #{course_no} AND ROWNUM < 4
+		]]>
+	</select>
+	
+	<!-- Q&A -->
+	<select id="getQnaList" resultType="com.ic.alang.vo.QnaVo">
+		Select * From ic_Qna_Board Where course_no = #{course_no}
+		ORDER BY question_no desc		
+	</select>
+	<select id="getQnaByNo" resultType="com.ic.alang.vo.QnaVo">
+		Select * From ic_Qna_Board Where question_no = #{question_no}
+	</select>
+	<insert id="AnswerQuestion">	
+		insert into ic_Qna_Answer values(
+		    IC_QNA_ANSWER_SEQ.nextval,
+		    #{question_no},
+		    #{member_no},
+		    #{answer_content},		    
+		    SYSDATE
+		)
+	</insert>	
+	<insert id="writeQuestion">
+		INSERT INTO ic_Qna_Board VALUES(
+		    IC_QNA_BOARD_SEQ.nextval,
+		    #{course_no},
+		    #{member_no},    
+		    #{question_name},
+		    #{question_content},
+		    SYSDATE
+		)
+	</insert>	
+	<select id="getAnswerByMemberNo" resultType="com.ic.alang.vo.QnaAnswerVo">
+		Select a.* from ic_qna_answer a
+		where a.member_no = #{member_no}
+	</select>
+	<select id="getAnswerByQuestionNo" resultType="com.ic.alang.vo.QnaAnswerVo">	
+		Select a.* from ic_qna_board q , ic_qna_answer a
+		where q.question_no = a.question_no
+		and a.question_no = #{question_no}		
+	</select>
+	
+	
+	
+	<!-- 2021-11-15 - 장한별 님 -->
+	<select id="getBigCategory" resultType="com.ic.alang.vo.BigCategoryVo">
+		select * from ic_Big_Category
+	</select>
+	
+	<select id="getSmallCategory" resultType="com.ic.alang.vo.SmallCategoryVo">
+		select * from ic_Small_Category
+	</select>
+	
+	<!-- 2021-11-16 - 강홍 추가 -->
+	<select id="getLectureByNo" resultType="com.ic.alang.vo.LectureVo">
+		SELECT * FROM ic_Course_lecture
+		WHERE lecture_no = #{no}
+	</select>
+	
+	<insert id="purchaseRecord">
+		INSERT INTO ic_my_course VALUES(
+			ic_My_Course_seq.nextval,
+			#{member_no},
+			#{lecture_no},
+			(SELECT course_price FROM ic_course_lecture WHERE lecture_no = #{lecture_no}),
+			SYSDATE
+		)
+	</insert>
+	
+	<select id="purchaseList" resultType="com.ic.alang.vo.MyCourseVo">
+		SELECT * FROM ic_my_course
+		WHERE member_no = #{no}
+	</select>
+	
+	<!-- 2021-11-24 장한별님  -->
+	<insert id="writeReport">
+		insert into ic_report VALUES(
+		ic_report_seq.nextval,
+		#{member_no},
+		#{course_no},
+		#{report_reason},
+		SYSDATE
+	)
+	</insert>
+	
+	<!-- 2021-11-24 노진호님 추가 -->
+	<select id="getStudentList" resultType="com.ic.alang.vo.MemberVo" >			
+		SELECT t2.* FROM(
+		    SELECT t1.* , ROWNUM as rnum FROM(
+		        select m.* from ic_my_course u , ic_member m
+		        where u.member_no = m.member_no and
+		        u.lecture_no in (SELECT l.lecture_no FROM ic_course_lecture l  where l.course_no = #{course_no})
+		    )t1		
+		)
+		<![CDATA[
+		t2 where t2.rnum < 6
+		]]>
+	</select>
+	
+	<select id="getStudentListAll" resultType="com.ic.alang.vo.MemberVo" >
+		select m.* from ic_my_course u , ic_member m
+		where u.member_no = m.member_no and
+		u.lecture_no in (SELECT l.lecture_no FROM ic_course_lecture l  where l.course_no = #{course_no})
+	</select>
+		
+	<select id="getDistinceStudentList" resultType="com.ic.alang.vo.MemberVo">
+		select  DISTINCT m.* from ic_member m , ic_my_course y
+		where m.member_no = y.member_no
+		and y.lecture_no in (SELECT l.lecture_no FROM ic_course_lecture l  where l.course_no = #{course_no})	
+	</select>
+	
+	<select id="registerForCourseDate" resultType="com.ic.alang.vo.MyCourseVo">
+		select * from(
+		   select *
+		   from ic_my_course r		   
+		)
+		    where member_no = #{member_no} AND ROWNUM = 1
+	</select>
+	
+	<select id="getSellList" resultType="com.ic.alang.vo.MyCourseVo">
+		SELECT t2.* FROM(
+		    SELECT t1.* , ROWNUM as rnum FROM(
+		        SELECT * FROM ic_my_course 
+		        where lecture_no in (SELECT l.lecture_no FROM ic_course_lecture l  where l.course_no = #{course_no})
+		        order By my_course_no desc
+		    )t1
+		)		
+		<![CDATA[
+		t2 where t2.rnum < 6
+		]]>
+	</select>
+	
+	<select id="getStudentRegisterDate" resultType="com.ic.alang.vo.MyCourseVo">
+		select * from ic_my_course
+		where member_no = #{member_no} and my_course_date = 
+		(select MIN(my_course_date) from ic_my_course 
+		where member_no = #{member_no})
+	</select>
+	
+	<select id="getCourseCategoryName" resultType="com.ic.alang.vo.CourseCategoryNameVo">
+		select bc.big_category_name, sc.small_category_name 
+		from ic_course_category cc, ic_small_category sc, ic_big_category bc 
+		where sc.big_category_no = bc.big_category_no
+		and cc.small_category_no = sc.small_category_no
+		and cc.course_no = #{course_no}
+	</select>
+	
+	<select id="courseRateAvg" resultType="float">
+		SELECT NVL(ROUND(AVG(review_rate), 1),0) from ic_review where course_no = #{course_no}		
+	</select>
+	
+	<update id="updateCourseVo">	
+		update ic_course set
+		course_name = #{course_name}, 
+		course_tuto = #{course_tuto} 
+		where course_no = #{course_no}
+	</update>
+	
+	<insert id="updateCourseThumnail">
+		IC_COURSE_THUMNAIL_SEQ.nextval,
+	    #{course_no},
+	    #{thumnail_File},
+	    #{filelink}
+	</insert>
+	
+	<select id="getCourseThumnailByCourseNo" resultType="com.ic.alang.vo.CourseThumnailVo">
+		select * from ic_course_thumnail
+		where course_no = #{course_no} and image_no = 
+		(select MAX(image_no) from ic_course_thumnail where course_no = #{course_no})
+	</select>
+		
+	
+	<select id="courseSales" resultType="int">
+	SELECT NVL(num, 0) FROM (
+	    select sum(my.my_course_price) as num from ic_my_course my, ic_course_lecture le
+	    where my.lecture_no = le.lecture_no 
+	    and le.course_no = #{course_no}
+	    )
+	</select>
+	
+	<select id="getSalesMonth" resultType="com.ic.alang.vo.lectureRankVo">
+		<![CDATA[		
+			SELECT TO_CHAR(mc.my_course_date,'w') as course_name ,SUM(mc.my_course_price) as lecture_no,SUM(mc.my_course_price) as count 
+			FROM IC_MY_Course mc, ic_course_lecture le
+			WHERE TO_CHAR(mc.my_course_date,'yyyy-mm-dd') > TO_CHAR(SYSDATE-28,'yyyy-mm-dd')
+			and TO_CHAR(mc.my_course_date,'yyyy-mm-dd') <= TO_CHAR(SYSDATE , 'yyyy-mm-dd')
+			and mc.lecture_no = le.lecture_no
+			and le.course_no in (select course_no from ic_course where course_no = #{course_no})
+			GROUP BY TO_CHAR(mc.my_course_date,'w')
+			order By course_name		
+		]]>
+		
+	</select>
+	<select id="courseStudentNum" resultType="int">
+			select COUNT(*) from (
+		    SELECT DISTINCT member_no from (
+			        select my.* from ic_course_lecture lec, ic_my_course my, ic_course c
+			        where my.lecture_no = lec.lecture_no and lec.course_no in c.course_no
+			        and lec.course_no = #{course_no}
+                    )
+            )
+		</select>
+	<select id="lectureVolumeRank" resultType="com.ic.alang.vo.lectureRankVo">
+		select t2.course_name , t1.* from(
+		    SELECT my.lecture_no ,count(*) as count FROM ic_my_course my, ic_course_lecture le
+		    where le.lecture_no = my.lecture_no and le.course_no = #{course_no}
+		    GROUP BY my.lecture_no HAVING COUNT(*) > 0
+		)t1 , ic_course_lecture t2
+		where t2.lecture_no in t1.lecture_no ORDER BY t1.count desc	
+	</select>
+	<select id="lectureSalesRank" resultType="com.ic.alang.vo.lectureRankVo">
+		select t2.course_name , t1.* from(
+		    SELECT my.lecture_no ,sum(my.my_course_price) as count FROM ic_my_course my, ic_course_lecture le
+		    where le.lecture_no = my.lecture_no and le.course_no = #{course_no}
+		    GROUP BY my.lecture_no HAVING  sum(my.my_course_price)> 0
+		    )t1 , ic_course_lecture t2
+		where t2.lecture_no in t1.lecture_no ORDER BY t1.count desc
+	</select>
+	
+	<select id="getLectureListManage" resultType="com.ic.alang.vo.LectureVo">
+		select * from ic_course_lecture where course_no = #{no}
+		order by lecture_no desc
+	</select>
+	
+	<select id="salesLectureCount" resultType="int">
+		select count(*) from ic_course_lecture le, ic_my_course my
+		where le.lecture_no = my.lecture_no
+		and le.course_no = #{course_no}
+	</select>
+	
+	<select id = "getMyQuestionList" resultType = "com.ic.alang.vo.QnaVo">
+		select * from ic_qna_board where question_no not in 
+		(select question_no from ic_qna_answer where member_no = #{member_no})
+		order by question_no desc
+	</select>
+	
+	<select id = "getMyCourseReview" resultType = "com.ic.alang.vo.ReviewVo">
+		select r.* from ic_review r, ic_course c
+		where r.course_no = c.course_no
+		and c.member_no = #{member_no}
+	</select>
+	
+	
+	<select id="getLectureSaleBank" resultType="com.ic.alang.vo.lectureRankVo">
+		select le.course_name,le.lecture_no, my.my_course_price as count from ic_my_course my, ic_course_lecture le
+		where my.lecture_no = le.lecture_no
+		and le.course_no = #{course_no}
+	</select>
+		
+</mapper>

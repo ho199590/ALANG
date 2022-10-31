@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ic.alang.member.mapper.MemberSQLMapper">
+	<insert id="register">
+	insert into ic_member Values(
+    ic_member_SEQ.nextval,
+    #{member_id},
+    #{member_pw},
+    #{member_name},
+    #{member_phone},
+    #{member_email},
+    0,
+    SYSDATE
+)
+	</insert>
+	
+	<select id="getMemberByIdandPw" resultType="com.ic.alang.vo.MemberVo">
+	SELECT * 
+	FROM ic_member 
+	WHERE member_id=#{member_id}
+	and member_pw=#{member_pw}  
+	</select>
+	
+	<select id="getMemberByNo" resultType="com.ic.alang.vo.MemberVo">
+    select * from ic_member where member_no =#{no}
+    </select>
+    
+    <select id="myPage" resultType="com.ic.alang.vo.MemberVo">
+	   select
+	   * 
+	   FROM ic_member
+	   where member_no=#{no}
+   </select>
+   
+   <!-- 2021-11-24 장한별님 -->
+   <select id="getCountByMemberId" resultType="int">
+		select count(*) from ic_member
+		where member_id=#{id}
+   	</select>
+   	
+   	<select id="getMemberByID" resultType="com.ic.alang.vo.MemberVo">
+   	select * from ic_member where member_id like #{id}
+   	</select>
+   
+   
+      	<!-- 1130 노진호 마이페이지 통계 -->
+   	<select id="totalCourseNum" resultType="int">
+   		select COUNT(*) from ic_course where member_no = #{member_no}
+   	</select>
+	<select id="totalStudentNum" resultType="int">
+	   	select COUNT(*) from (
+		    SELECT DISTINCT t1.member_no from (
+		        select my.* from ic_course_lecture lec, ic_my_course my, ic_course c
+		        where my.lecture_no = lec.lecture_no and lec.course_no in c.course_no
+		        and c.member_no = #{member_no}
+		    ) t1
+		)t2
+   	</select>
+   	<select id="totalPointNum" resultType="int">
+		select SUM(my.my_course_price) from ic_course_lecture lec, ic_my_course my, ic_course c
+		where my.lecture_no = lec.lecture_no and lec.course_no in c.course_no
+		and c.member_no = #{member_no}
+   	</select>
+   	<select id="totalAnswerNum" resultType="int">
+		SELECT COUNT(*) FROM ic_qna_answer where member_no = #{member_no}   		
+   	</select>
+   	
+   	<select id="totalCourseRate" resultType="float">
+	   	select NVL(ROUND(AVG(review_rate), 1),0) from ic_review where course_no in 
+		(select course_no from ic_course where member_no = #{member_no})
+   	</select>
+   	
+   	<select id="getMyQuestionList" resultType="com.ic.alang.vo.QnaVo">
+		select * from ic_qna_board 
+		where question_no not IN (select question_no from ic_qna_answer)
+		and course_no in (select course_no from ic_course where member_no =#{member_no})
+		order by ic_qna_board.question_date desc
+   	</select>
+   	
+   	<!-- 1203 노진호 마이페이지 -->
+   	<select id="getMyCourseList" resultType="com.ic.alang.vo.CourseVo">
+   		select * from ic_course where member_no  = #{member_no}
+		order By course_no desc
+   	</select>
+   	<select id="getLectureNum" resultType="int">
+   		select COUNT(*) from ic_course_lecture where course_no=#{course_no}
+   	</select>
+   	<select id = "getMyCourseReview" resultType = "com.ic.alang.vo.ReviewVo">
+   		select * from ic_review where course_no in (select course_no from ic_course where member_no = #{member_no})
+   	</select>
+   	<select id = "getMyCourseSales" resultType = "com.ic.alang.vo.lectureRankVo">
+	   	SELECT TO_CHAR(mc.my_course_date,'mm') as course_name, SUM(mc.my_course_price) as lecture_no , SUM(mc.my_course_price) as count
+		FROM IC_MY_Course mc , ic_course_lecture le, ic_course co
+		where mc.lecture_no = le.lecture_no and le.course_no = co.course_no
+		and co.member_no = #{member_no}
+		GROUP BY TO_CHAR(mc.my_course_date,'mm')
+		order by TO_NUMBER(TO_CHAR(mc.my_course_date,'mm'),99)
+   	</select>
+   	
+   	<select id = "getMyCourseCategoryList" resultType = "com.ic.alang.vo.lectureRankVo">
+	   	select b.big_category_name as course_name, count(b.big_category_name) as lecture_no , count(b.big_category_name) as count
+		from ic_course_category c, ic_small_category s, ic_big_category b, ic_course co
+		where c.course_no = co.course_no and s.small_category_no = c.small_category_no
+		and s.big_category_no = b.big_category_no
+		and co.member_no = #{member_no}
+		GROUP BY b.big_category_name
+   	</select>
+   	
+   	<select id="getMyStudentMonth"  resultType = "com.ic.alang.vo.lectureRankVo">
+	   	SELECT TO_CHAR(mc.my_course_date,'mm') as course_name , SUM(mc.my_course_price) as lecture_no , COUNT(*) as count
+		FROM IC_MY_Course mc , ic_course co, ic_course_lecture le
+		where le.course_no = co.course_no and mc.lecture_no = le.lecture_no and co.member_no = #{member_no}
+		And TO_CHAR(mc.my_course_date,'yyyy') = TO_CHAR(SYSDATE,'yyyy')
+		GROUP BY TO_CHAR(mc.my_course_date,'mm')
+		order by TO_CHAR(mc.my_course_date,'mm')
+   	</select>
+   	
+</mapper>
+
